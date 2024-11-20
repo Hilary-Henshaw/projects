@@ -1,0 +1,525 @@
+---
+title: "Final Project"
+author: "Hilary Henshaw"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+library(ISLR)
+library(tidyverse)
+library(devtools)
+library(MVN)
+library(caTools)
+library(class)
+library(ggplot2)
+library(corrplot)
+library(scatterplot3d)
+library(ranger)
+library(e1071)
+library(pls)
+library(rpart)
+library(rpart.plot)
+library(caret)
+library(randomForest)
+library(MASS)
+library(cluster)
+library(factoextra) 
+library(ROSE)
+```
+
+## Abstract
+
+Different types of apples and the varying environment they were grown can affect their shelf life. However there are general characteristics that makes it easy to identify a rotting/bad apple. Apples that are past their shelf life can grow a toxic mold called patulin, which can be dangerous to ingest. Apples contain microorganisms that can enter the gut and colonize it. The bacteria in apples can have health implications. In an effort to understand the characteristics that differentiates a bad apple from a good one we will analyse apple data obtained by an american agriculture company by using various statistical methods to examine the relationship between the different attributes of apple to determine its quality.
+
+## Introduction
+
+An apple is an edible fruit that is round and comes in a variety of colors. Apples contain antioxidants, vitamins and fibers that are necessary for human function. This makes it a healthy choice that could be included in a meal for a balanced diet, as it decreases the risk of diseases such as heart disease, cancer, obesity and diabetes. This is an important problem to address because eating an apple a day have a lot of benefits and eating a bad apple 	would not only prevent you from getting the nutrients but could potentially lead to illness. Exploring the characteristics of apple can help us identify fewer desirable apples and prevent the side effects from eating one.
+
+The antioxidant in apple neutralizes free radicals in the body that could lead to higher stress levels. They also contain nutrients like fibers, useful in regulating body’s use of sugar, lowering cholesterol level and normalizing bowl movement. The Health Professionals Follow-up Study reports that fiber consumptions have been linked to lower stroke rates. Apples that are past their expiration makes it unsafe for consumption, so it is important to know how to tell when they are no longer safe (healthline, 2020). The shelf life of apple depends on how they are preserved or stored. The shelf life for on the counter apples are 5-7 days, the shelf life for pantry apples are 3 weeks, refrigerator is 4-6 weeks, once cut is 3-5 days in the fridge, or 8 months in the freezer, for applesauce its 7–10 days in the fridge, 2 months in the freezer and cooked (e.g. apple pie) is 3–5 days in the fridge.
+
+Some physical attributes of a bad apple include soft spots or bruising or mushy texture, wrinkled skin, brown or black blemishes, liquid oozing from apple skin and bland or grainy taste. When an apple becomes bad it is prone to mold growth, mold is caused by a microorganism that could cause reactions to the respiratory system. These microorganisms grow mycotoxin which is responsible for some food borne illness. Mycotoxin consumed in huge amounts can cause nausea, bleeding ulcers and have an increase in your risk of cancer. If the computation is statistical significant then the stated physical attributes above is related to a bad or rotten apple and should not be consumed.
+
+## Data Description
+This is an analysis of the apple quality dataset, obtained from Kaggle. This dataset was provided by an American agriculture company. The dataset contains information about various attributes of apples and their characteristics. It includes details such as fruit ID, size, weight, sweetness, crunchiness, juiciness, ripeness, acidity and quality.
+
+Dataset Columns:
+•	id: unique identifier for each fruit
+•	Size: size of the fruit
+•	Weight: weight of the fruit.
+•	Sweetness: Degree of sweetness of the fruit
+•	Crunchiness: Texture indicating the crunchiness of the fruit.
+•	Juiciness: Level of juiciness of the fruit.
+•	Ripeness: stage of ripeness of the fruit.
+•	Acidity: Acidity level of the fruit
+•	Quality: Overall quality of the fruit.
+
+size, weight, sweetness, crunchiness, juiciness, ripeness and acidity are predictor variables while Quality is the response variable.
+
+The apple quality dataset comprises of 4001 observations and 9 columns.
+
+Quality is a categorical variable while id, Size, Weight, Sweetness, Crunchiness, Juiciness, Ripeness and Acidity are numerical variables
+There is one missing value. 
+
+## Method 
+The apple quality project is about predicting and analyzing factors that affect the quality of apples using advanced machine learning techniques.
+
+Data Collection: Gather data on various apple attributes like Size, Weight, Sweetness, Crunchiness, Juiciness, and Ripeness, alongside Quality ratings.
+
+Data Preparation: Clean the data by removing NAs and ensuring all variables are in the correct format. Split the data into training and testing sets, making sure all classes are represented.
+
+Principal Component Analysis (PCA): Use PCA to reduce the dimensionality of the dataset, retaining the most significant variance. This helps in simplifying the dataset and removing noise.
+
+K-Means Clustering: Apply K-Means clustering to the PCA-transformed data to identify natural groupings within the dataset.
+
+Random Forest Model: Train a Random Forest model to predict apple quality based on the various attributes. Random Forest is particularly useful for handling non-linear relationships and interactions between variables.
+
+Evaluation with Confusion Matrix: Evaluate the model’s performance using a confusion matrix to assess accuracy, sensitivity, and specificity. This ensures that the model generalizes well to unseen data.
+
+Feature Importance: Analyze the importance of different features in the model to understand which attributes most influence apple quality.
+
+Addressing Class Imbalance: Use techniques like oversampling to ensure each class is sufficiently represented in the training set, preventing the model from ignoring smaller classes.
+
+```{r}
+apple <- read.csv("apple_quality.csv", na.strings = "?", stringsAsFactors = T)
+
+colnames(apple) <- c('id', 'Size', 'Weight', 'Sweetness', 'Crunchiness','Juiciness','Ripeness', 'Acidity', 'Quality')
+
+
+print(dim(apple))
+colSums(is.na(apple))
+apple <- na.omit(apple)
+colSums(is.na(apple))
+
+# Check for missing values
+print(any(is.na(apple)))
+
+head(apple)
+```
+
+
+```{r}
+numeric_columns <- apple[, sapply(apple, is.numeric)]
+var_apple <- var(numeric_columns, na.rm = TRUE)
+cor_apple <- cor(numeric_columns, use = "complete.obs")
+
+
+var_apple
+cor_apple
+```
+
+```{r}
+corrplot(cor(apple[,2:7]),method = "ellipse")
+scatterplot3d(apple[, c(6, 7, 4)], pch=4, angle = 40)
+```
+
+There is a positive correlation between sweetness and juiciness. The more ripe the apple the more juicy it is.
+
+
+```{r}
+ggplot(apple, aes(x = Size, fill = Quality)) +
+  geom_histogram(binwidth = 2, alpha = 0.8, position = "identity") +
+  labs(
+    title= "",
+    y = "Frequency",
+    fill = "Quality"
+  ) +
+  theme_minimal()
+
+ggplot(apple, aes(x = Crunchiness, y = Weight))+
+  geom_point(size = 2)+
+  geom_point(aes(color = Quality))+
+  geom_smooth(method = "lm", color = "red", se = FALSE) + 
+  labs(
+    title = "Scatterplot of horsepower vs acceleration by Origin",
+    x = "Sweetness",
+    y = "Crunchiness",
+    color = "Quality"
+  )
+
+ggplot(apple, aes(x = Weight, y = Ripeness)) +
+  geom_point(aes(color = Quality), size = 2) +              
+  geom_smooth(method = "lm", color = "red", se = FALSE) +  
+  labs(
+    title = "Scatter Plot of Ripeness vs Weight of Apple",
+    x = "Weight",
+    y = "Ripeness"
+  ) +
+  theme_minimal()        
+
+```
+
+Here are some visuals of the characteristics in the apple dataset. There is a decreasing relationship between ripeness and weight, crunchiness and sweetness. Smaller size apples tend to have bad quality.
+
+```{r}
+pairs(apple[,2:8], main = "Pairwise Scatterplots")
+```
+
+This gives insight to the relationship between apple characteristics you can see there's no clear pattern between size and acidity or juiciness. There's a decreasing pattern between sweetness and ripeness. 
+
+```{r}
+# Perform MANOVA
+manova_result <- manova(cbind(Size, Weight,Sweetness,Crunchiness,Juiciness,Ripeness) ~ Quality, data = apple)
+
+# Summary of MANOVA
+summary(manova_result)
+```
+The MANOVA (Multivariate Analysis of Variance) test indicates a significant difference between apple quality across the measured variables. The Pillai’s trace value is 0.2593, which is a measure of the effect size. Higher values indicate a stronger effect. The p-value is less than 2.2e-16 indicating the results are highly significant.
+
+
+## performing PCA
+
+```{r}
+pca_data <- scale(apple[, c("Size", "Weight", "Sweetness", "Crunchiness", "Juiciness", "Ripeness")])
+
+pca_result <- prcomp(pca_data, center = TRUE, scale. = TRUE)
+
+summary(pca_result)
+
+screeplot(pca_result, main = "Scree Plot", col = "blue", pch = 16)
+
+biplot(pca_result, scale = 0)
+
+pca_scores <- as.data.frame(pca_result$x)
+```
+
+using PCA to has efficiently reduce dimensionality, while also retaining key information in fewer component. The first two principal components (PC1 and PC2) capture nearly half of the total variance, which suggests they are crucial for understanding the structure of the dataset.
+
+## K-Mean Clustering
+
+```{r}
+scaled_data <- scale(apple[, c("Size", "Weight", "Sweetness", "Crunchiness", "Juiciness", "Ripeness")])
+
+pca_result <- prcomp(scaled_data, center = TRUE, scale. = TRUE)
+pca_data <- pca_result$x[, 1:2] 
+
+set.seed(123)
+k <- 3
+
+kmeans_result <- kmeans(pca_data, centers = k, nstart = 25)
+
+pca_data <- as.data.frame(pca_data)
+pca_data$cluster <- as.factor(kmeans_result$cluster)
+
+apple$Cluster <- as.factor(kmeans_result$cluster)
+
+ggplot(pca_data, aes(x = PC1, y = PC2, color = cluster)) +
+  geom_point(size = 2) +
+  labs(title = "K-means Clustering on PCA Results",
+       x = "Principal Component 1",
+       y = "Principal Component 2") +
+  theme_minimal()
+```
+
+## Random Forest
+
+```{r}
+min_class <- which.min(table(apple$Quality))
+
+apple_balanced <- ovun.sample(Quality ~ ., data = apple, method = "over", N = length(apple$Quality) * 2)$data
+
+set.seed(123)
+train_index <- createDataPartition(apple_balanced$Quality, p = 0.7, list = FALSE)
+train_set <- apple_balanced[train_index, ]
+test_set <- apple_balanced[-train_index, ]
+
+train_set$Quality <- droplevels(train_set$Quality)
+
+rf_model <- randomForest(Quality ~ Size + Weight + Sweetness + Crunchiness + Juiciness + Ripeness,
+                         data = train_set, importance = TRUE, ntree = 100)
+print(rf_model)
+
+rf_predictions <- predict(rf_model, newdata = test_set)
+
+conf_matrix <- confusionMatrix(rf_predictions, test_set$Quality)
+print(conf_matrix)
+
+test_error <- mean(rf_predictions != test_set$Quality)
+print(paste("Test Error: ", test_error))
+```
+
+The Random Forest model is a classification algorithm trained to predict the Quality of apples based on several features (Size, Weight, Sweetness, Crunchiness, Juiciness, and Ripeness) and using 100 trees.
+
+The OOB estimate of error rate is 5.64%. This means that, on average, about 5.64% of predictions made by the model are incorrect, suggesting strong performance during training. 94% of the test set was correctly classified by the model.
+
+The test error rate is 6.13% which is a low proportion of misclassifcation in the test set. Overall the random forest was highly effective.
+
+## Classification Tree
+
+```{r}
+apple$Quality <- as.factor(apple$Quality)
+
+apple <- apple[apple$Quality != "", ]
+
+apple$Quality <- factor(apple$Quality)
+
+print(levels(apple$Quality))
+print(table(apple$Quality))
+
+set.seed(123)
+
+train_index <- createDataPartition(apple$Quality, p = 0.7, list = FALSE)
+train_set <- apple[train_index, ]
+test_set <- apple[-train_index, ]
+
+# Check levels in train and test sets
+print("Train set levels:")
+print(levels(train_set$Quality))
+print("Test set levels:")
+print(levels(test_set$Quality))
+
+# Fit logistic regression model if there are exactly two levels
+if (length(levels(train_set$Quality)) == 2) {
+    logistic_model <- glm(Quality ~ Size + Weight + Sweetness + Crunchiness + Juiciness + Ripeness,
+                          data = train_set, family = binomial)
+
+    predictions <- predict(logistic_model, newdata = test_set, type = "response")
+    predicted_classes <- ifelse(predictions > 0.5, levels(train_set$Quality)[2], levels(train_set$Quality)[1])
+
+    predicted_classes <- factor(predicted_classes, levels = levels(test_set$Quality))
+
+    conf_matrix <- confusionMatrix(predicted_classes, test_set$Quality)
+    print(conf_matrix)
+} else {
+    print("Quality has more than two levels; consider using a different classification method.")
+}
+
+tree_model <- rpart(Quality ~ Size + Weight + Sweetness + Crunchiness + Juiciness + Ripeness,
+                    data = train_set)
+
+rpart.plot(tree_model)
+
+tree_predictions <- predict(tree_model, newdata = test_set, type = "class")
+
+tree_conf_matrix <- confusionMatrix(tree_predictions, test_set$Quality)
+print(tree_conf_matrix)
+
+```
+The model shows a good balance between sensitivity and specificity, with reasonably high positive and negative predictive values. The Mcnemar's Test p-value indicates significant differences in the predictions, suggesting potential areas for improvement or adjustment in model parameters.
+
+## 10 fold Cross-Validation
+
+```{r}
+svm_model <- svm(Quality ~ Size + Weight + Sweetness + Crunchiness + Juiciness + Ripeness,
+                 data = train_set, kernel = "linear")
+
+svm_predictions <- predict(svm_model, newdata = test_set)
+
+svm_conf_matrix <- confusionMatrix(svm_predictions, test_set$Quality)
+print(svm_conf_matrix)
+
+```
+
+The model classified approximately 74.7% of the observations which is a good indicator that the data set is balanced. About 69% of actual bad were correctly predicted and about 80% of actual good were predicted correctly.
+when the model predicts "bad," it is correct 77.78% of the time and when the model predicts "good," it is correct 72.31% of the time. The model overall shows a good balance between sensitivity and specificity, making it relatively effective for classification
+
+## LDA and QDA test
+
+```{r}
+correlation_matrix <- cor(train_set[, sapply(train_set, is.numeric)])
+print(correlation_matrix)
+
+# Check for NA values in the predictors
+sum(is.na(train_set))
+sum(is.na(test_set))
+
+# Remove rows with NAs (if appropriate)
+train_set <- na.omit(train_set)
+test_set <- na.omit(test_set)
+
+
+lda.fit.train <- lda(Quality ~ Size + Weight + Sweetness + Crunchiness + Juiciness + Ripeness, data = train_set)
+
+# Make predictions on the test set
+lda.pred.test <- predict(lda.fit.train, newdata = test_set)
+
+# Create a confusion matrix
+confusion_matrix <- table(Predicted = lda.pred.test$class, Actual = test_set$Quality)
+print(confusion_matrix)
+
+# Calculate test error
+test_error <- mean(lda.pred.test$class != test_set$Quality)
+print(paste("LDA Test Error Rate:", test_error))
+
+lda.pred.train <- predict(lda.fit.train)
+
+data.frame(lda.pred.train)[2:8,]
+```
+Size and Sweetness: −0.33997707
+There is a moderate negative correlation, suggesting that as the size of the apples increases, their sweetness tends to decrease.
+
+Weight and Ripeness: −0.255468269
+This indicates a moderate negative correlation, implying that heavier apples might be less ripe.
+
+Juiciness and Crunchiness: -0.26459332
+This moderate negative correlation suggests that more crunchy apples may tend to be less juicy.
+
+Sweetness and Ripeness:−0.273953662
+
+Another moderate negative correlation indicating that sweeter apples are often less ripe.
+
+overall there is a 74.7% accuracy which is the percent of correct predictions made by the model.
+
+The LDA test error rate is approximately 26.0%. This means 26.0% of the predictions made by the model were incorrect.
+
+This error rate is high, which could mean that the model may not be performing well in distinguishing between the two classes. It is better at predicting class 1(good) than it is class 0 (bad).
+
+```{r}
+qda.fit.train <- qda(Quality ~ Size + Weight + Sweetness + Crunchiness + Juiciness + Ripeness, data = train_set)
+qda.fit.train
+
+# Predict on the test set
+qda.pred <- predict(qda.fit.train, test_set)
+
+# Create a confusion matrix
+qda_confusion_matrix <- table(qda.pred$class, test_set$Quality)
+
+# Calculate the test error rate
+qda_test_error_rate <- 1 - sum(diag(qda_confusion_matrix)) / sum(qda_confusion_matrix)
+
+# Display the results
+print(qda_confusion_matrix)
+cat("QDA Test error rate:", qda_test_error_rate, "\n")
+
+qda.fit.test <- qda(Quality ~ Size + Weight + Sweetness + Crunchiness + Juiciness + Ripeness, data = test_set)
+qda.fit.test
+
+qda.pred.train <- predict(qda.fit.train)
+
+# Optionally print predictions from the training set
+data.frame(qda.pred.train)[2:8,]
+```
+
+The QDA model performed well, it has a lower error rate compared to the previous LDA model, suggesting that the quadratic decision boundary is more appropriate for the data structure. The test error rate is approximately 16.8%. This indicates that around 16.8% of the predictions were incorrect, which is a significant improvement over the LDA error rate of 26.0%.
+
+```{r}
+set.seed(2)
+
+train_indices <- sample(1:nrow(apple), size = 0.8 * nrow(apple))
+train <- apple[train_indices, ]
+test <- apple[-train_indices, ]
+
+# Remove rows with missing values
+train <- na.omit(train)
+test <- na.omit(test)
+
+# Check dimensions and NA values
+if (nrow(train) == 0 || nrow(test) == 0) {
+    stop("Training or testing set is empty after removing NA values.")
+}
+
+# Convert Quality to factor
+train$Quality <- as.factor(train$Quality)
+
+# Create training and testing matrices
+train.X <- cbind(train$Sweetness, train$Juiciness)
+test.X <- cbind(test$Sweetness, test$Juiciness)
+train.Quality <- train$Quality
+
+# Check dimensions of matrices
+if (nrow(train.X) == 0 || nrow(test.X) == 0) {
+    stop("Training or testing feature matrices are empty.")
+}
+
+# Perform KNN for different k values
+k_values <- c(1, 3, 5, 7, 9)
+test_errors <- sapply(k_values, function(k) {
+  if (k > nrow(train.X)) {
+    stop(paste("k =", k, "exceeds number of training samples."))
+  }
+  knn_pred <- knn(train.X, test.X, train.Quality, k = k)
+  mean(knn_pred != test$Quality)
+})
+
+names(test_errors) <- k_values
+
+# Find best k
+best_k <- k_values[which.min(test_errors)]
+best_error <- min(test_errors)
+
+# Fit LDA and QDA models
+lda_model <- lda(Quality ~ Sweetness + Juiciness, data = train)
+lda_pred <- predict(lda_model, test)$class
+lda_error <- mean(lda_pred != test$Quality)
+
+qda_model <- qda(Quality ~ Sweetness + Juiciness, data = train)
+qda_pred <- predict(qda_model, test)$class
+qda_error <- mean(qda_pred != test$Quality)
+
+# Summary of results
+comparison <- list(
+  KNN_Test_Errors = test_errors,
+  Best_K = best_k,
+  Best_KNN_Error = best_error,
+  LDA_Error = lda_error,
+  QDA_Error = qda_error
+)
+
+print(comparison)
+
+```
+
+Test errors were as follows:
+1       3       5       7       9 
+42.375 40.500 39.750 39.875 39.250 
+
+The value of K that perform best was 9 as it has the lowest KNN error. Both KNN and LDA show the best performance, QDA is slightly behind LDA. However the results suggest that KNN with K=9 or LDA could be good choices for this dataset.
+
+```{r}
+model1 <- glm(Quality ~ Size + Weight + Sweetness + Crunchiness + Juiciness + Ripeness, 
+               data = train_set, family = binomial)
+
+model.summary <- summary(model1)
+model.summary
+
+coefficients <- model.summary$coefficients
+
+r_squared_model <- 1 - (model.summary$deviance / model.summary$null.deviance)
+
+aic <- AIC(model1)
+bic <- BIC(model1)
+
+cat("Pseudo R-Squared for model:", round(r_squared_model, 4), "\n")
+cat("AIC:", aic, "\n")
+cat("BIC:", bic, "\n")
+
+predictions <- predict(model1, newdata = test_set, type = "response")
+predicted_classes <- ifelse(predictions > 0.5, "good", "bad")  
+
+mse <- mean((as.numeric(test_set$Quality) - predictions)^2)
+cat("Mean Squared Error:", mse, "\n")
+```
+For each unit increase in Size, the log odds of the apple being "good" decreases by approximately 0.5665. This suggests that larger apples are less likely to be classified as "good."
+
+For each unit increase in Weight, the log odds of being "good" decrease by about 0.1864, indicating that heavier apples are also less likely to be classified as "good."
+
+Increased sweetness is also associated with lower odds of being "good," with a similar effect size to Size.
+
+The coefficient for crunchiness is not statistically significant (p = 0.641), indicating that Crunchiness does not significantly influence the quality.
+
+Increased juiciness is associated with lower odds of being "good," with a statistically significant effect.
+
+Ripeness (-0.0033) This variable is not significant (p = 0.889), suggesting it does not have a meaningful impact on the outcome.
+
+The model predicts Quality as a function of several predictors. The model indicates that Size, Weight, Sweetness and Juiciness are important predictors of apple quality, while Crunchiness and Ripeness does not significantly impact quality based on this analysis. The model has a moderate fit, explaining about 21.1% of the variability in quality scores.
+The overall significance of the model is very high (p < 2.2e-16), indicating that at least one predictor is significantly associated with Quality.
+
+## Conclusion
+
+The analysis of apple quality using various statistical methods reveals significant insights into the relationships among the measured variables and their impact on quality classification.
+
+A positive correlation between sweetness and juiciness suggests that riper apples tend to be juicier. Conversely, the findings highlight negative correlations among several variables, indicating that larger apples are often less sweet, and heavier apples may be less ripe. This nuanced understanding of the interplay between features like size, weight, and sweetness provides a valuable perspective on apple quality.
+
+The MANOVA test indicates significant differences in apple quality across the measured variables, supported by a high Pillai’s trace value (0.2593) and a p-value less than 2.2e-16. This emphasizes the effectiveness of the selected features in differentiating apple quality.
+
+PCA successfully reduced dimensionality while retaining essential information, with the first two principal components accounting for nearly half of the total variance. This suggests that they are critical for understanding the dataset's structure.
+
+The Random Forest model, trained on the dataset, achieved an impressive overall accuracy of 74.7%, with a low test error rate of 6.13%. The model demonstrated a strong balance between sensitivity and specificity, effectively classifying both "good" and "bad" quality apples. The McNemar's Test indicated significant differences in predictions, suggesting areas for potential model improvement.
+
+While the LDA model exhibited a high error rate (26.0%), the QDA model showed improvement with a lower error rate (16.8%), highlighting the quadratic decision boundary's appropriateness for this dataset. The KNN model with 𝑘=9 also performed well, indicating its suitability alongside LDA for this analysis.
+
+The logistic regression model revealed that increased size, weight, sweetness, and juiciness are associated with lower odds of an apple being classified as "good." Notably, the coefficients for crunchiness and ripeness were not statistically significant, suggesting they do not meaningfully impact quality.
+
+Overall, the results underscore that size, weight, sweetness, and juiciness are key predictors of apple quality, while crunchiness and ripeness do not significantly influence the outcome. The logistic regression model explains approximately 21.1% of the variability in quality scores, reinforcing the conclusion that the selected predictors are significantly associated with apple quality. The high significance of the model (p < 2.2e-16) further validates the relevance of these predictors in quality assessment.
+
+In summary, the analysis provides a robust framework for understanding and predicting apple quality, offering actionable insights for growers and marketers to enhance product quality and consumer satisfaction.

@@ -1,0 +1,493 @@
+---
+title: "Sleep Health Data Analysis"
+author: "Hilary Henshaw"
+date: "`r Sys.Date()`"
+---
+
+## Abstract
+Sleep duration across different individuals in various occupations varies depending on workload, sleeping disorder, and/or other factors. Inadequate rest can affect our body's vital organs causing them to function abnormally and increase stress. In an effort to understand the factors that influence sleep health and the toll it has on our health, data visualization tools and metrics are often employed. We will be discussing the correlation between the duration of sleep and sleep disorders in males and females of various occupations and how this affects their health and stress levels.
+
+## Introduction
+Sleep plays an important role in our daily routine; we spend about one-third of our time doing it. The average sleep during for adults is between 7 and 9 hours a night. Adults who sleep less than 7 hours a night may be more prone to chronic long-term health issues than those who sleep 7 or more hours a night. Sleep is essential to every process in the body, it is detrimental to our physical and mental functioning. Sleep also plays a role in our ability to fight diseases, develop immunity, and metabolism, and support growth and development. Sleep may be linked to several hormones that promote alertness and this is essential to carrying out our daily tasks. It is also linked to learning and the formation of long-term memories – including muscle memories.
+
+Sleep deprivation has been linked to an increased risk of obesity (). Shorter sleep duration leads to changes in weight either by decreasing energy burnt or by increasing food intake. Sleep deprivation also leads to fatigue making us less likely to be motivated to exercise. Sleep deprivation may be linked to a dulled frontal lobe, which makes it less hard to make healthy food choices and resist the temptation of foods high in calories, fats, sugars, and carbs. sleep regulates hormones that are essential in regulating stress and metabolism. Over time lack of stress can cause fluctuations in hormones leading to an increase in blood pressure and heart problems (Mayo Clinic, 2022).  Contributing factors to lack of sleep are sleep apnea and insomnia.
+
+Obesity is a disorder involving having too much body fat or mass or medically known as BMI. Nearly 1 in 3 (30.7%) adults are overweight,more than 1 in 3 men (34.1%) and 1 in 4 women (27.5 %) are overweight. Obesity occurs as a result of energy imbalance; when poor diet choices or over feeding is combined with little to no physical activity. Other causes of obesity includes genetics, stress, side effects from medicine, your environment etc. Obesity can be seen across diverse age groups, diverse genders and in adults, adolescents, or children (with parental assistance). Examining this data set is important in finding trends and patterns of obesity causes. This would be beneficial to more innovative ways to provide proper healthcare and establish more healthy eating patterns and exercise routine.
+
+Sleep Apnea is a condition where breathing stops and starts during sleep repeatedly (Mayo Clinic, 2023). Sleep apnea can be due to muscles in the throat relaxing thereby blocking airflow to the lungs, it can also occur when the brain doesn’t send proper signals to muscles that control breathing. Insomnia refers to persistent problems falling asleep. It is caused by stress, aging, life habits that disrupt sleep, medicines, caffeine, or alcohol consumption etc. (Mayo Clinic, 2024). Women are more likely insomnia due to hormonal changes during the menstrual cycle. In this dataset, we will review how shorter sleep time can have an impact on health factors such as heart rate, BMI, blood pressure, and stress levels. Additionally, it will highlight patterns of insomnia and sleep apnea on the quality of sleep.
+
+A normal resting heart rate for adults ranges from 60 to 100 beats per minute. A lower heart rate at rest implies more efficient heart function and better cardiovascular fitness. Faster Heart rate could be an indication of irregular heart rhythms, called arrhythmia, and can cause tachycardia. The less hours of sleep an individual gets the faster their rate.
+
+Inadequate rest can affect our body's vital organs causing them to function abnormally and increase stress. An increase in stress levels can lead to eating disorders, memory retention loss, and a decrease in work quality. This is an important problem to address because stress levels impacting work performance can lead to workers being prone to mistakes and errors. It may also lead to depression and health conditions such as high blood pressure, potentially obesity, and heart issues. Exploring sleep health will present an understanding of its effects and establish its importance.
+
+## Descriptive Analysis
+
+This is an analysis of the sleep health and lifestyle dataset, obtained from Kaggle. This dataset was created by Laksika Tharmalingam for illustrative purposes. The key features in the data set involve comprehensive sleep metrics, lifestyle factors, cardiovascular health, and sleep disorder analysis.
+
+Dataset columns:
+
+  a) Person ID: An identifier for each individual.
+  b) Gender: The gender of the person (Male/Female).
+  c) Age: The age of the person in years.
+  d) Occupation: The occupation or profession of the person.
+  e) Sleep Duration (hours): The number of hours the person sleeps per day.
+  f) Quality of Sleep (scale: 1-10): A subjective rating of the quality of sleep, ranging from 1 to 10.
+  g) Physical Activity Level (minutes/day): The number of minutes the person engages in physical activity daily.
+  h) Stress Level (scale: 1-10): A subjective rating of the stress level experienced by the person, ranging from 1 to 10.
+  i) BMI Category: The BMI category of the person (e.g., Underweight, Normal, Overweight).
+  j) Blood Pressure (systolic/diastolic): The blood pressure measurement of the person, indicated as systolic pressure over diastolic pressure.
+  k) Heart Rate (bpm): The resting heart rate of the person in beats per minute.
+  l) Daily Steps: The number of steps the person takes per day.
+  m) Sleep Disorder: The presence or absence of a sleep disorder in the person (None, Insomnia, Sleep Apnea).
+
+Details about Sleep Disorder Column:
+
+  1)	None: The individual does not exhibit any specific sleep disorder.
+  2)	Insomnia: The individual experiences difficulty falling asleep or staying asleep, leading to inadequate or poor-quality sleep.
+  3)	Sleep Apnea: The individual suffers from pauses in breathing during sleep, resulting in disrupted sleep patterns and potential health risks.
+  
+
+The Sleep Health and Lifestyle Dataset comprises 374 observations and 13 columns.
+
+Gender, occupation, BMI category, and sleep disorder are categorical variables.
+
+```{r}
+#dataset
+sleephealth <-
+ readr::read_csv("https://storage.googleapis.com/kagglesdsdata/datasets/3321433/6491929/Sleep_health_and_lifestyle_dataset.csv?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=gcp-kaggle-com%40kaggle-161607.iam.gserviceaccount.com%2F20240620%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20240620T211452Z&X-Goog-Expires=259200&X-Goog-SignedHeaders=host&X-Goog-Signature=2a595df257fb1fbf13b65f48aaea3405de5afa6e9d78811dcfecc5c6aeea235e046cd146b70c47bc4fb5d3e1c82b58028b3345e415fd8b23c925bb0286269b4b062f39be2deed1188dd92d3e9bbf90bc84ac5f70d33e27ce302212f2148ffbbf7da4f91db367a91fd5446bdf5d6f05e609bb8bca9c4c6cdf011b9775d3a510da76e6ef040c6b2e43cc7e65ba68446de108f50087af195012cb0e1fbf33c036af51431135c876b63665b2de1ca32773203fbb93ef93e47316a0acc8b963a1f88e4210ac2f05f6c585bca35fb169a19c09f1084438d0a8e479f9d57b7e93ab84237c064449c768a9613768dcb91b78bac46b158be7ab994a2db8fbdf329ec77114")
+
+sleephealth
+```
+
+This exploration will focus on 11 of the 13 variables presented in this data set. Lets check for missing variables:
+
+```{r}
+sapply(sleephealth, function(x) sum(is.na(x)))
+```
+Missing Values: none
+
+Now we can look at the attributes and data values
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(modelr)
+library(bp)
+library(psych)
+library(patchwork)
+library(ggrepel)
+
+describe(sleephealth)
+```
+
+## Visualise distribution of data via box plots
+
+```{r}
+plot1 <- sleephealth %>%
+  ggplot() +
+    geom_boxplot(aes(y = `Sleep Duration`))
+
+plot2 <- sleephealth %>%
+  ggplot() +
+    geom_boxplot(aes(y = `Quality of Sleep`))
+
+plot3 <- sleephealth %>%
+  ggplot() +
+    geom_boxplot(aes(y = `Stress Level`))
+
+plot4 <- sleephealth %>%
+  ggplot() +
+    geom_boxplot(aes(y = `Heart Rate`))
+
+plot5 <- sleephealth %>%
+  ggplot() +
+    geom_boxplot(aes(y = `Physical Activity Level`))
+
+plot6 <- sleephealth %>%
+  ggplot() +
+    geom_boxplot(aes(y = `Daily Steps`))
+
+plot7 <- sleephealth %>%
+  ggplot() +
+    geom_boxplot(aes(y = Age))
+
+combined_plots <- plot1 + plot2 + plot3 + plot4 + plot5 + plot6 + plot7
+print(combined_plots)
+
+```
+
+Looking at the different boxplots it looks like Heart Rate have outlier points. outliers which are the values above 1.5*interquartile range (IQR). The outlier values represent a group of measurements higher than the average.
+
+Let’s further investigate to see if it requires cleanup.
+
+Outlier check for Heart Rate:
+
+```{r}
+carb_iqr <- IQR(sleephealth$`Heart Rate`)
+
+# Calculate the lower and upper bounds
+lower_bound <- quantile(sleephealth$`Heart Rate`, 0.25) - 5.0 * carb_iqr
+upper_bound <- quantile(sleephealth$`Heart Rate`, 0.75) + 5.0 * carb_iqr
+
+# Check if each value is within bounds
+mild_outliers <- sleephealth$`Heart Rate` < lower_bound | sleephealth$`Heart Rate` > upper_bound
+
+mild_outliers
+```
+
+Proportion of the outlier is less than five percent, there is no required further cleanup.
+
+## Methods
+
+The main goal of our data analysis and visualization is to observe features that are best at indicating whether sleep affects the health of individuals across diverse demographics and occupations. We will also discuss sleep quality of individuals with sleeping disorders vs those with none. linear regression and general trends will be useful in model and parameter selection.
+
+Different techniques will be applied to understand each attribute of our data set. We will utilize data visualization such as pie charts, histograms, scatter plots, etc.
+
+## frequency of sleep diagnosis
+
+```{r}
+gender_count <- sleephealth %>%
+  group_by(Gender) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(percentage = n / sum(n)) %>%
+  arrange(percentage) %>%
+  mutate(labels = scales::percent(percentage))
+
+ggplot(gender_count, aes(x = "", y = percentage, fill = Gender)) +
+  geom_col() +
+  geom_text(aes(x =1.6, label = paste0(labels, "\n", Gender)), position = position_stack(vjust = 0.5)) +
+  coord_polar(theta = "y") +
+  scale_x_discrete(guide = guide_axis(n.dodge=2)) +
+  labs(title = "Gender Distribution")
+
+Occupation_count <- sleephealth %>%
+  group_by(Occupation) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(percentage = n / sum(n)) %>%
+  arrange(percentage) %>%
+  mutate(labels = scales::percent(percentage))
+
+ggplot(Occupation_count, aes(x = "", y = percentage, fill = Occupation)) +
+  geom_col() +
+  geom_text(aes(label = paste0(labels, "\n", Occupation)), position = position_stack(vjust = 0.5)) +
+  coord_polar(theta = "y") +
+  labs(title = "Occupation Distribution")
+
+sleepdisorder_count <- sleephealth %>%
+  group_by(`Sleep Disorder`) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(percentage = n / sum(n)) %>%
+  arrange(percentage) %>%
+  mutate(labels = scales::percent(percentage))
+
+ggplot(sleepdisorder_count, aes(x = "", y = percentage, fill = `Sleep Disorder`)) +
+  geom_col() +
+  geom_text(aes(label = paste0(labels, "\n", `Sleep Disorder`)), position = position_stack(vjust = 0.5)) +
+  coord_polar(theta = "y") +
+  labs(title = "Sleep Disorder Distribution")
+
+```
+
+In this plot we can see the percentages of gender,occupation and sleep disorder variables within the 374 observations.
+
+
+## Visualise distribution of data via boxplots and scatterplots.
+
+
+```{r}
+sleephealth %>%
+  arrange(desc(`Sleep Duration`)) %>%
+  mutate(Occupation = fct_reorder(Occupation, `Sleep Duration`)) %>%
+  ggplot(aes(`Sleep Duration`, Occupation, color = `Sleep Disorder`)) +
+  geom_boxplot() +
+  labs(
+    title = "What Occupation has the least Sleep Duration",
+    x = "Sleep Duration(hours)"
+       ) +
+  theme(plot.title = element_text(hjust = 0.5, vjust = 1))
+```
+
+Scientist and sales representative have the lowest sleep duration while Managers have the highest sleep duration.
+Most individuals with sleep duration less than 7 hours have insomnia or sleep apnea.
+
+```{r}
+sleephealth %>%
+  arrange(desc(`Quality of Sleep`)) %>%
+  mutate(Occupation = fct_reorder(Occupation, `Quality of Sleep`)) %>%
+  ggplot(aes(`Quality of Sleep`, Occupation, , color = `Sleep Disorder`)) +
+  geom_boxplot() +
+  labs(
+    title = "What Occupation has the worst Sleep Quality",
+    x = "Quality of Sleep"
+       ) +
+  theme(plot.title = element_text(hjust = 0.5, vjust = 1))
+```
+
+Engineers the highest sleep quality while Scientist and sales representative least sleep quality.
+Individuals with a sleep quality of 5 or less all have insomnia and sleep apnea.
+
+```{r}
+sleephealth %>%
+  arrange(desc(`Physical Activity Level`)) %>%
+  mutate(Occupation = fct_reorder(Occupation, `Physical Activity Level`)) %>%
+  ggplot(aes(`Physical Activity Level`, Occupation, , color = `Sleep Disorder`)) +
+  geom_boxplot() +
+  labs(
+    title = "frequency of Occupation and their physical activity",
+    x = "Physical Activity Level(minutes/day)"
+       ) +
+  theme(plot.title = element_text(hjust = 0.5, vjust = 1))
+```
+
+Nurses have the most physical activity while Engineers have the least physical activity. Most Individuals that have less physical activity also have sleep disorders.
+
+```{r}
+sleephealth %>%
+  arrange(desc(`Stress Level`)) %>%
+  mutate(Occupation = fct_reorder(Occupation, `Stress Level`)) %>%
+  ggplot(aes(`Stress Level`, Occupation, color = `Sleep Disorder`)) +
+  geom_boxplot() +
+  labs(
+    title = "frequency of Stress Level"
+       ) +
+  theme(plot.title = element_text(hjust = 0.5, vjust = 1))
+```
+
+Engineers have the least stress level. sales representatives, scientist and sales person have higher stress levels.
+
+
+```{r}
+sleephealth %>%
+  arrange(desc(`Daily Steps`)) %>%
+  mutate(Occupation = fct_reorder(Occupation, `Daily Steps`)) %>%
+  ggplot(aes(`Daily Steps`, Occupation, color = `Sleep Disorder`)) +
+  geom_boxplot() +
+  labs(
+    title = "Daily steps taken by each profession",
+    x ="Daily Steps"
+       ) +
+  theme(plot.title = element_text(hjust = 0.5, vjust = 1))
+```
+
+Sales representative and engineers take the least number of daily steps while lawyers, doctors and Nurses takes the most numbers of daily steps. Individuals with less daily steps have a sleeping disorder.
+
+```{r}
+sleephealth %>%
+  ggplot(aes(`Sleep Duration`, Occupation)) +
+  geom_point(aes(size = Age)) +
+  geom_text(aes(label = Gender), check_overlap = TRUE, vjust = 2, hjust = 1) +
+  expand_limits(y = c(0,8)) +
+  labs(
+    title = "Sleep Duration based on Age and Gender",
+    x = "Sleep Duration (hours)"
+       ) +
+  theme(plot.title = element_text(hjust = 1, vjust = 5)) +
+  theme_minimal()
+```
+
+From this analysis we can see that mostly males that are salesperson, engineers and doctors between the age of 30 and 40 have the least sleep duration. Females between 40 and 50 that are nurses and scientists have the least sleep duration.
+
+```{r}
+sleephealth %>%
+  ggplot(aes(`Quality of Sleep`, Occupation)) +
+  geom_point(aes(size = Age)) +
+  geom_text(aes(label = Gender), check_overlap = TRUE, vjust = 2, hjust = 1) +
+  expand_limits(y = c(0,8)) +
+  labs(
+    title = "Quality of sleep based on Age and Gender",
+    x = "Quality of sleep"
+       ) +
+  theme(plot.title = element_text(hjust = 1, vjust = 5)) +
+  theme_minimal()
+```
+
+Mostly males between 30 and 40 and females that are 40 have the worst quality of sleep. 
+
+```{r}
+sleephealth %>%
+  ggplot(aes(`Physical Activity Level`, Occupation)) +
+  geom_point(aes(size = Age)) +
+  geom_text(aes(label = Gender), check_overlap = TRUE, vjust = 2, hjust = 1) +
+  expand_limits(y = c(0,8)) +
+  labs(
+    title = "Physical Activity based on Age and Gender",
+    x = "Physical Activity (minutes/day)"
+       ) +
+  theme(plot.title = element_text(hjust = 1, vjust = 5)) +
+  theme_minimal()
+```
+
+Females between age 40 and 50 and males age 30 and 40 have the least physical activity. 
+
+```{r}
+sleephealth %>%
+  ggplot(aes(`Stress Level`, Occupation)) +
+  geom_point(aes(colour = Gender)) +
+  geom_text(aes(label = Age), check_overlap = TRUE, vjust = 2, hjust = 1) +
+  expand_limits(y = c(0,8)) +
+  labs(
+    title = "Stress Level based on Age and Gender",
+    x = "Stress Level"
+       ) +
+  theme(plot.title = element_text(hjust = 0.5, vjust = 1)) +
+  theme_minimal()
+```
+
+Stress levels are higher for men and women within age 40 and 50.
+
+```{r}
+sleephealth %>%
+  arrange(desc(`Daily Steps`)) %>%
+  mutate(Occupation = fct_reorder(Occupation, `Daily Steps`)) %>%
+  ggplot(aes(`Daily Steps`, Occupation, color = Gender)) +
+  geom_point() +
+  geom_text(aes(label = Age), check_overlap = TRUE, vjust = 2, hjust = 1) +
+  labs(
+    title = "Daily Steps taken based on Gender",
+    x = "Daily Steps"
+       ) +
+  theme(plot.title = element_text(hjust = 0.5, vjust = 1))
+```
+
+Males and females within age 30 and 40 have the least amount of daily steps taken.
+
+## Distribution of sleep data across health assessments
+
+
+We will examine the BMI categories, Heart Rate and Blood Pressure
+
+```{r}
+sleephealth$`BMI Category` <- ifelse(sleephealth$`BMI Category`== "Normal", "Normal Weight", sleephealth$`BMI Category`)
+
+sleephealth %>%
+  ggplot(aes(`Sleep Duration`, Occupation , fill = `BMI Category`)) +
+  geom_tile() +
+  geom_text(aes(label = paste0(Gender, "\n", Age), vjust = 1, hjust = 1)) +
+  expand_limits(x = c(5.5,8.5)) +
+  labs(
+    title = "What Hour of Sleep Duration has higher BMI",
+    x = "Sleep Duration (hours)"
+       ) +
+  theme(plot.title = element_text(hjust = 0.5, vjust = 1)) +
+  theme_minimal()
+```
+
+This Comparison shows us that most individuals that gets less than 7 hours of sleep identify as overweight or obese. They are also mostly teachers, software engineers, scientist, sales person, sales representative and nurses.
+
+```{r}
+sleephealth %>%
+  ggplot(aes(`Sleep Duration`, `Heart Rate`)) +
+  geom_point(aes(size = `Heart Rate`)) +
+  geom_text(aes(label = paste0(Gender, "\n", Age)), check_overlap = TRUE, vjust = 2, hjust = 1) +
+  geom_smooth(method = 'lm', formula = y ~ log(x), color = 'red') +
+  expand_limits(y = c(64,85)) +
+  labs(
+    title = "Frequency of Heart Rate",
+    x = "Sleep Duration (hours)"
+       ) +
+  theme(plot.title = element_text(hjust = 1, vjust = 5)) +
+  theme_minimal()
+
+```
+
+We can see there is a correlation between heart rate and sleep duration. Increasing heart rate is linked with shorter sleep duration.
+
+```{r}
+sleephealth %>% 
+  separate(`Blood Pressure`, into = c("systolic blood pressure", "diastolic blood pressure"), sep = "/") %>%
+  ggplot(aes(`systolic blood pressure`, `diastolic blood pressure`)) +
+  geom_point(aes(colour = `Sleep Duration`)) +
+  labs(
+    title = "Sleep Duration on blood pressure"
+       ) +
+  theme(plot.title = element_text(hjust = 1, vjust = 5)) +
+  theme_minimal()
+```
+
+There is an increasing trend between individuals with less sleep duration and a higher blood pressure. 
+
+```{r}
+sleephealth %>% 
+  separate(`Blood Pressure`, into = c("systolic blood pressure", "diastolic blood pressure"), sep = "/") %>%
+  ggplot(aes(`systolic blood pressure`, `diastolic blood pressure`)) +
+  geom_point(aes(colour = `Sleep Disorder`)) +
+  labs(
+    title = "Sleep Disorder on blood pressure"
+       ) +
+  theme(plot.title = element_text(hjust = 1, vjust = 5)) +
+  theme_minimal()
+```
+
+Sleep disorder shows a correlation with individuals with increased diastolic and systolic blood pressure.
+
+
+```{r}
+sleephealth %>% 
+  ggplot(aes( x = `Heart Rate`, colour = `Sleep Disorder`)) +
+  geom_freqpoly() +
+  labs(
+    title = "Sleep Disorder on Heart Rate",
+    x = "Heart Rate (bpm)"
+       ) 
+```
+
+We can see that individuals with higher heart rates all have sleep apnea or insomnia.
+
+#Bivariate/Multivariate Analysis
+
+## Scatter Plot
+
+Lets look at the predictors of stress level and how they relate to each other. To see the bivariate relationship, we will look at a scatter plot.
+
+```{r}
+ggplot(sleephealth, aes(x = `Stress Level`, y = `Quality of Sleep`)) +
+geom_point() +
+geom_smooth(method = 'lm', formula = y ~ log(x), color = 'red') +
+labs(title = "Impact of sleep quality on stress level" ,x = "Stress Level", y = "Quality of Sleep")
+```
+
+The better the quality of sleep the lower the stress levels and the lower the quality of sleep the higher the stress level.
+
+```{r}
+ggplot(sleephealth, aes(x = `Stress Level`, y = `Sleep Duration`)) +
+geom_point() +
+geom_smooth(method = 'lm', formula = y ~ log(x), color = 'red') +
+labs(title = "Impact of sleep duration on stress level" ,x = "Stress Level", y = "Sleep Duration(hours)")
+```
+
+We see that the less sleep is had the higher the stress level
+
+```{r}
+ggplot(sleephealth, aes(x = `Stress Level`, y = `Physical Activity Level`)) +
+geom_point() +
+geom_smooth(method = 'lm', formula = y ~ log(x), color = 'red') +
+labs(title = "Impact of physical activity on stress level" ,x = "Stress Level", y = "Physical Activity(minutes/day)")
+```
+
+Physical Activity doesn't have an impact on stress levels.
+
+```{r}
+ggplot(sleephealth, aes(x = `Stress Level`, y = `Daily Steps`)) +
+geom_point() +
+geom_smooth(method = 'lm', formula = y ~ log(x), color = 'red') +
+labs(title = "Impact of Daily steps taken on stress level" , x = "Stress Level", y = "Daily Steps")
+```
+There is a slight increasing trend between daily steps taken and stress levels.
+
+## Conclusion
+These parameters tend to show a correlation between sleep disorders and stress levels, sleep duration, increased BMI, blood pressure and heart rate. Individual that had sleeping disorders slept for less amount of time having a negative impact on their sleep quality. Most of these individuals were males and females between the age 40 and 50 and worked jobs such as sales representative, sales, person, scientist, engineers, nurses and doctors. They tend to have a high BMI levels, higher heart rates and blood pressure.
+For future research, I would also explore how insufficient sleep and increased stress levels affect the work performance of individuals in these occupations.
+
+## Appendix
+
+“Sleep Apnea.” Mayo Clinic, Mayo Foundation for Medical Education and Research, 6 Apr. 2023, www.mayoclinic.org/diseases-conditions/sleep-apnea/symptoms-causes/syc-20377631. 
+
+“Insomnia.” Mayo Clinic, Mayo Foundation for Medical Education and Research, 2024, www.mayoclinic.org/diseases-conditions/insomnia/symptoms-causes/syc-20355167. 
+
+“Can a Lack of Sleep Cause High Blood Pressure?” Mayo Clinic, Mayo Foundation for Medical Education and Research, 9 Aug. 2022, www.mayoclinic.org/diseases-conditions/high-blood-pressure/expert-answers/sleep-deprivation/faq-20057959#:~:text=People%20who%20sleep%20six%20hours,to%20control%20stress%20and%20metabolism. 
+
+Tharmalingam, Laksika. “Sleep Health and Lifestyle Dataset.” Kaggle, 18 Sept. 2023, www.kaggle.com/datasets/uom190346a/sleep-health-and-lifestyle-dataset/data. 
+
